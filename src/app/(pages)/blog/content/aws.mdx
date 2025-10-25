@@ -1,0 +1,478 @@
+---
+title: How to Generate and Manage AWS Access Keys and Credentials
+date: '2025-10-22'
+tags: [aws, iam, credentials, cloud-services]
+draft: false
+summary: Managing AWS credentials is crucial for security. Learn how to create access keys, configure IAM users, and implement best practices.
+author: Tech Guide
+---
+
+![AWS Logo](https://logos-world.net/wp-content/uploads/2021/08/Amazon-Web-Services-AWS-Logo.png)
+
+In this guide, I'll show you how to create AWS IAM users, generate access keys, and securely manage credentials for your applications and infrastructure.
+
+I needed AWS credentials to deploy applications on EC2, manage S3 buckets, and automate infrastructure with Terraform.
+
+# First Approach (Quick Access Key Setup)
+
+---
+
+## Step 1: Create an IAM User
+
+- Log in to [AWS Management Console](https://console.aws.amazon.com/)
+- Go to **IAM** (Identity and Access Management)
+- Click **Users** in the left sidebar
+- Click **Create user**
+- Enter a username (e.g., "app-deployment-user")
+- Click **Next**
+
+## Step 2: Set Permissions
+
+- Select permission options:
+  - **Add user to group** - Recommended for managing permissions
+  - **Attach policies directly** - For specific permissions
+  - **Copy permissions from existing user**
+- Choose appropriate policies based on your needs:
+  - `AmazonS3FullAccess` - For S3 operations
+  - `AmazonEC2FullAccess` - For EC2 management
+  - `AWSLambda_FullAccess` - For Lambda functions
+  - `CloudFrontFullAccess` - For CDN management
+- Click **Next** > **Create user**
+
+![AWS IAM Console](https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800)
+
+## Step 3: Create Access Keys
+
+- In the Users list, click on your new user
+- Go to **Security Credentials** tab
+- Under **Access keys**, click **Create access key**
+- Select **Command Line Interface (CLI)**, **Local code**, or **Other** based on use case
+- Check the confirmation box
+- Click **Create access key**
+
+## Step 4: Retrieve Your Credentials
+
+- You'll see:
+  - **Access Key ID** (e.g., `AKIAIOSFODNN7EXAMPLE`)
+  - **Secret Access Key** (e.g., `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`)
+- **IMPORTANT:** Download the `.csv` file or copy both values immediately
+- AWS won't show the Secret Access Key again
+- Store securely in a password manager or environment variables
+
+## Step 5: Configure AWS CLI
+
+- Install [AWS CLI](https://aws.amazon.com/cli/)
+- Run:
+
+```bash
+aws configure
+```
+
+- Enter your credentials when prompted:
+
+```
+AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+Default region name [None]: us-east-1
+Default output format [None]: json
+```
+
+## Step 6: Test Your Setup
+
+- Verify credentials work:
+
+```bash
+aws sts get-caller-identity
+```
+
+- Output:
+
+```json
+{
+  "UserId": "AIDACKCEVSQ6C2EXAMPLE",
+  "Account": "123456789012",
+  "Arn": "arn:aws:iam::123456789012:user/app-deployment-user"
+}
+```
+
+<br />
+<br />
+
+# Second Approach (Advanced IAM Setup with Roles)
+
+---
+
+## Step 1: Create IAM Role
+
+- Go to **IAM** > **Roles**
+- Click **Create role**
+- Select **AWS service** as trusted entity type
+- Choose service (e.g., **EC2**, **Lambda**, **ECS**)
+- Click **Next**
+
+## Step 2: Add Permissions
+
+- Select policies for the role:
+  - Search and add policies relevant to your use case
+  - Click **Create inline policy** for custom permissions
+  - Example inline policy for S3:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::my-bucket/*"
+    }
+  ]
+}
+```
+
+- Click **Next**
+
+## Step 3: Name and Create Role
+
+- Enter role name (e.g., "EC2-S3-Access")
+- Review the trust policy
+- Click **Create role**
+
+## Step 4: Attach Role to EC2 Instance
+
+- Launch an EC2 instance or select existing one
+- Go to **Instance State** > **Security** > **Modify IAM role**
+- Select your created role
+- Click **Update IAM role**
+
+## Step 5: Access Credentials from Instance
+
+- SSH into your EC2 instance
+- Credentials are automatically available:
+
+```bash
+# Check credentials
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/EC2-S3-Access
+```
+
+- Use AWS CLI commands directly without manual credential setup:
+
+```bash
+aws s3 ls
+aws ec2 describe-instances
+```
+
+<br />
+
+# Third Approach (Temporary Security Credentials with STS)
+
+---
+
+## Step 1: Use AWS Security Token Service (STS)
+
+- Get temporary credentials for short-term access:
+
+```bash
+aws sts assume-role \
+  --role-arn arn:aws:iam::123456789012:role/MyRole \
+  --role-session-name my-session
+```
+
+## Step 2: Handle Response
+
+- Response includes temporary credentials:
+
+```json
+{
+  "Credentials": {
+    "AccessKeyId": "ASIAJFQ7EXAMPLE",
+    "SecretAccessKey": "lHnwJZHDxxxxxEXAMPLE",
+    "SessionToken": "FwoGZXIvYXdzEHgaDG...",
+    "Expiration": "2025-10-22T14:30:00Z"
+  },
+  "AssumedRoleUser": {
+    "AssumedRoleId": "AIDACKCEVSQ6C2EXAMPLE:my-session",
+    "Arn": "arn:aws:iam::123456789012:assumed-role/MyRole/my-session"
+  }
+}
+```
+
+## Step 3: Export Temporary Credentials
+
+```bash
+export AWS_ACCESS_KEY_ID="ASIAJFQ7EXAMPLE"
+export AWS_SECRET_ACCESS_KEY="lHnwJZHDxxxxxEXAMPLE"
+export AWS_SESSION_TOKEN="FwoGZXIvYXdzEHgaDG..."
+```
+
+- Temporary credentials automatically expire after specified duration
+
+<br />
+
+# API Request Examples
+
+---
+
+## List S3 Buckets
+
+```bash
+aws s3 ls --profile my-profile
+```
+
+## Upload File to S3
+
+```bash
+aws s3 cp myfile.txt s3://my-bucket/myfile.txt
+```
+
+## Create EC2 Instance
+
+```bash
+aws ec2 run-instances \
+  --image-id ami-0c55b159cbfafe1f0 \
+  --count 1 \
+  --instance-type t2.micro \
+  --key-name my-key-pair
+```
+
+## Query DynamoDB
+
+```bash
+aws dynamodb scan --table-name MyTable
+```
+
+## Deploy Lambda Function
+
+```bash
+aws lambda create-function \
+  --function-name my-function \
+  --runtime python3.11 \
+  --role arn:aws:iam::123456789012:role/lambda-role \
+  --handler index.handler \
+  --zip-file fileb://function.zip
+```
+
+<br />
+
+# Python Implementation Example
+
+```python
+import boto3
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Method 1: Using explicit credentials
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+    region_name='us-east-1'
+)
+
+# Method 2: Using environment variables (automatic)
+ec2_client = boto3.client('ec2', region_name='us-east-1')
+
+# Method 3: Using IAM role (on EC2/Lambda)
+dynamodb = boto3.resource('dynamodb')
+
+# Example: List S3 buckets
+def list_buckets():
+    response = s3_client.list_buckets()
+    for bucket in response['Buckets']:
+        print(bucket['Name'])
+
+# Example: Upload file to S3
+def upload_to_s3(file_path, bucket_name, object_name):
+    s3_client.upload_file(file_path, bucket_name, object_name)
+    print(f"File uploaded to s3://{bucket_name}/{object_name}")
+
+# Example: Query DynamoDB
+def get_dynamodb_item(table_name, key):
+    table = dynamodb.Table(table_name)
+    response = table.get_item(Key=key)
+    return response.get('Item')
+
+if __name__ == '__main__':
+    list_buckets()
+    upload_to_s3('local-file.txt', 'my-bucket', 'remote-file.txt')
+```
+
+<br />
+
+# Node.js Implementation Example
+
+```javascript
+require('dotenv').config();
+const AWS = require('aws-sdk');
+
+// Configure AWS SDK
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION || 'us-east-1'
+});
+
+const s3 = new AWS.S3();
+const ec2 = new AWS.EC2();
+
+// List S3 buckets
+async function listBuckets() {
+  try {
+    const data = await s3.listBuckets().promise();
+    console.log('Buckets:');
+    data.Buckets.forEach(bucket => {
+      console.log(`  - ${bucket.Name}`);
+    });
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Upload file to S3
+async function uploadToS3(filePath, bucketName, objectName) {
+  const fs = require('fs');
+  const fileContent = fs.readFileSync(filePath);
+
+  const params = {
+    Bucket: bucketName,
+    Key: objectName,
+    Body: fileContent
+  };
+
+  try {
+    const result = await s3.upload(params).promise();
+    console.log(`File uploaded: ${result.Location}`);
+  } catch (error) {
+    console.error('Upload error:', error);
+  }
+}
+
+// List EC2 instances
+async function listEC2Instances() {
+  try {
+    const data = await ec2.describeInstances().promise();
+    data.Reservations.forEach(reservation => {
+      reservation.Instances.forEach(instance => {
+        console.log(`Instance: ${instance.InstanceId} - ${instance.State.Name}`);
+      });
+    });
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Example usage
+listBuckets();
+```
+
+<br />
+
+# IAM Policy Examples
+
+---
+
+## S3 Read-Only Access
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::my-bucket",
+        "arn:aws:s3:::my-bucket/*"
+      ]
+    }
+  ]
+}
+```
+
+## EC2 Full Access
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "ec2:*",
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+## Lambda Execution Role
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:*:*:*"
+    }
+  ]
+}
+```
+
+<br />
+
+# Security Best Practices
+
+- **Never hardcode credentials** - use environment variables, AWS credentials file, or IAM roles
+- **Rotate access keys regularly** - create new keys and delete old ones quarterly
+- **Use IAM roles for EC2/Lambda** - avoid embedding credentials in code
+- **Enable MFA** - add multi-factor authentication to AWS account
+- **Use temporary credentials** - prefer STS tokens for short-term access
+- **Implement least privilege** - grant only necessary permissions
+- **Monitor access** - enable CloudTrail to audit API activity
+- **Use key rotation policies** - automate credential updates
+- **Store secrets securely** - use AWS Secrets Manager or Parameter Store
+- **Revoke compromised keys immediately** - delete and regenerate
+- Check [AWS IAM Best Practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)
+
+<br />
+
+# Credential Configuration Methods
+
+| Method | Use Case | Security |
+|--------|----------|----------|
+| Environment Variables | Development, scripts | Medium |
+| AWS Credentials File | CLI, local development | Medium |
+| IAM Roles (EC2/Lambda) | Production servers, functions | High |
+| AWS Secrets Manager | Sensitive data, apps | Very High |
+| STS Temporary Tokens | Short-term access | Very High |
+| MFA | Account protection | Very High |
+
+<br />
+
+# Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Access Denied" error | Check IAM policy permissions |
+| "Invalid credentials" | Verify Access Key ID and Secret |
+| "Expired session token" | Regenerate temporary credentials |
+| Credentials not found | Check environment variables or credentials file location |
+| MFA device not recognized | Resync device in IAM console |
+
+---
+
+**Ready to deploy?** Check out the [AWS IAM Documentation](https://docs.aws.amazon.com/iam/) and [AWS CLI Documentation](https://docs.aws.amazon.com/cli/) for complete reference.

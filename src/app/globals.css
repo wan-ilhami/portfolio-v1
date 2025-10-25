@@ -1,0 +1,142 @@
+@import 'tailwindcss';
+/* @import './prism.css' layer(components); */
+
+@plugin '@tailwindcss/typography';
+@config '../../typography.js';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.5rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.75rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 2rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2rem;
+  --text-4xl--line-height: 2.5rem;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 3.5rem;
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 1;
+  --text-7xl: 4.5rem;
+  --text-7xl--line-height: 1;
+  --text-8xl: 6rem;
+  --text-8xl--line-height: 1;
+  --text-9xl: 8rem;
+  --text-9xl--line-height: 1;
+}
+
+@layer base {
+  :root {
+    /* Light Mode */
+    --background: #F9FAFB;   /* neutral white-grey */
+    --foreground: #1F2937;   /* dark gray text */
+    --primary: #374151;      /* slate gray primary */
+    --secondary: #6B7280;    /* medium gray secondary */
+    --accent: #9CA3AF;       /* soft accent gray */
+    --muted: #E5E7EB;        /* light muted surfaces */
+    --border: #D1D5DB;       /* light border gray */
+  }
+
+  .dark {
+    /* Dark Mode */
+    --background: #1C1C1C;   /* deeper charcoal, better contrast than #3D3D3D */
+    --foreground: #F3F4F6;   /* bright neutral text */
+    --primary: #D1D5DB;      /* light gray for headings/links */
+    --secondary: #9CA3AF;    /* medium gray for secondary text */
+    --accent: #6B7280;       /* subtle accent for icons/buttons */
+    --muted: #2E2E2E;        /* slightly lighter than bg for cards */
+    --border: #3D3D3D;       /* your chosen mid-gray for borders */
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  a {
+    color: var(--primary);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--secondary);
+  }
+}
+
+
+
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 300% 300%;
+  animation: gradient-flow 4s ease infinite;
+}
+
+.link-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.link-underline::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  display: block;
+  margin-top: 5px;
+  right: 0;
+  background: var(--foreground); /* Light mode uses text color */
+  transition: width 0.25s ease;
+}
+
+.dark .link-underline::after {
+  background: var(--foreground); /* Dark mode uses same variable */
+}
+
+.link-underline:hover::after {
+  width: 100%;
+  left: 0;
+}
+
+.pushable {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.pushable .front {
+  background: linear-gradient(to right, #6366f1, #3b82f6);
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.5);
+}
+.pushable .front:active {
+  transform: scale(0.97);
+}
+

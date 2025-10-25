@@ -1,0 +1,368 @@
+---
+title: How to Get Twitch OAuth Tokens and API Access
+date: '2025-10-22'
+tags: [twitch, oauth, streaming, api]
+draft: false
+summary: Getting Twitch OAuth tokens is simple. Learn how to set up authentication for chatbots, overlays, and stream integrations.
+author: Tech Guide
+---
+
+![Twitch Logo](https://img.freepik.com/premium-vector/twitch-logo_578229-259.jpg?semt=ais_hybrid&w=740&q=80)
+
+In this guide, I'll show you how to create a Twitch application, generate OAuth tokens, and integrate them for chatbots, overlays, and custom extensions.
+
+I needed Twitch OAuth for building a chatbot that manages stream commands and displays real-time viewer statistics on my overlay.
+
+# First Approach (Quick Bot Token Setup)
+
+---
+
+## Step 1: Register Your Application
+
+- Go to the [Twitch Developer Console](https://dev.twitch.tv/console/apps)
+- Log in with your Twitch account
+- Click **+ Create Application**
+- Enter an application name (e.g., "Stream Bot")
+- Select **Category** (e.g., "Chat Bot" or "Stream Manager")
+- Check the required boxes and click **Create**
+
+![Twitch Developer Console](https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800)
+
+## Step 2: Get Your Client Credentials
+
+- In your application dashboard, go to **Manage**
+- You'll see:
+  - **Client ID** (e.g., `abc123def456ghijklmnopqrst`)
+  - Click **New Secret** to generate a **Client Secret**
+- **Important:** Store both values securely in environment variables
+- Never share these publicly
+
+## Step 3: Set OAuth Redirect URLs
+
+- In the **Manage** tab, scroll to **OAuth Redirect URLs**
+- Click **Add URL** and enter your redirect URLs:
+  - `http://localhost:3000` (for development)
+  - `https://yourdomain.com/callback` (for production)
+- Click **Update**
+
+## Step 4: Generate Bearer Token
+
+- For bot authentication without user authorization, use OAuth2 client credentials flow:
+
+```bash
+curl -X POST https://id.twitch.tv/oauth2/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "client_id=$CLIENT_ID" \
+  -d "client_secret=$CLIENT_SECRET" \
+  -d "grant_type=client_credentials"
+```
+
+- Response:
+
+```json
+{
+  "access_token": "YOUR_ACCESS_TOKEN",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+## Step 5: Use Your Bearer Token
+
+- Add it to API requests as a header:
+
+```bash
+curl -H "Client-ID: YOUR_CLIENT_ID" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  https://api.twitch.tv/helix/users
+```
+
+<br />
+<br />
+
+# Second Approach (OAuth User Authorization)
+
+---
+
+## Step 1: Create Authorization URL
+
+- Build the OAuth authorization URL with your credentials:
+
+```
+https://id.twitch.tv/oauth2/authorize?client_id=$CLIENT_ID&redirect_uri=$REDIRECT_URI&response_type=code&scope=$SCOPE
+```
+
+- Example:
+
+```
+https://id.twitch.tv/oauth2/authorize?client_id=abc123&redirect_uri=https%3A%2F%2Fyourdomain.com%2Fcallback&response_type=code&scope=user:read:email+channel:manage:broadcast
+```
+
+**Note:** [URL encode](https://meyerweb.com/eric/tools/dencoder/) your redirect URI
+
+### Common Scopes
+
+- `user:read:email` - Read user email address
+- `user:read:follows` - Get channels user follows
+- `channel:read:stream_key` - Get stream key
+- `channel:manage:broadcast` - Edit stream title and category
+- `chat:read` - Read chat messages
+- `chat:edit` - Send chat messages
+- `moderation:read` - Get banned users
+- `channel:manage:moderators` - Add/remove moderators
+
+Full scope list: [Twitch OAuth Scopes](https://dev.twitch.tv/docs/authentication/scopes)
+
+## Step 2: User Authorization
+
+- Direct users to the authorization URL
+- Users will see a permission prompt from Twitch
+- After authorizing, they're redirected to your callback URL with a `code` parameter
+
+## Step 3: Exchange Code for Token
+
+- Extract the code from the redirect URL
+- Exchange it for an access token:
+
+```bash
+curl -X POST https://id.twitch.tv/oauth2/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "client_id=$CLIENT_ID" \
+  -d "client_secret=$CLIENT_SECRET" \
+  -d "code=$CODE" \
+  -d "grant_type=authorization_code" \
+  -d "redirect_uri=$REDIRECT_URI"
+```
+
+## Step 4: Handle Token Response
+
+- You'll receive:
+
+```json
+{
+  "access_token": "dhmbtuytr6gue...",
+  "expires_in": 3600,
+  "refresh_token": "nnduytfjbfgm...",
+  "scope": ["user:read:email", "channel:manage:broadcast"],
+  "token_type": "Bearer"
+}
+```
+
+- Save the `access_token` for API requests
+- Store `refresh_token` to get new tokens when current one expires
+
+## Step 5: Refresh Your Token
+
+- When access token expires, use refresh token:
+
+```bash
+curl -X POST https://id.twitch.tv/oauth2/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "client_id=$CLIENT_ID" \
+  -d "client_secret=$CLIENT_SECRET" \
+  -d "grant_type=refresh_token" \
+  -d "refresh_token=$REFRESH_TOKEN"
+```
+
+<br />
+
+# API Request Examples
+
+---
+
+## Get Current User Info
+
+```bash
+curl -H "Client-ID: YOUR_CLIENT_ID" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  https://api.twitch.tv/helix/users
+```
+
+## Get Stream Information
+
+```bash
+curl -H "Client-ID: YOUR_CLIENT_ID" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  https://api.twitch.tv/helix/streams?user_id=CHANNEL_ID
+```
+
+## Update Stream Title
+
+```bash
+curl -X PATCH https://api.twitch.tv/helix/channels \
+  -H "Client-ID: YOUR_CLIENT_ID" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "New Stream Title"
+  }'
+```
+
+## Get Top Streams
+
+```bash
+curl -H "Client-ID: YOUR_CLIENT_ID" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://api.twitch.tv/helix/streams?first=20"
+```
+
+## Get User Followers
+
+```bash
+curl -H "Client-ID: YOUR_CLIENT_ID" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://api.twitch.tv/helix/users/follows?from_id=USER_ID&first=20"
+```
+
+<br />
+
+# Node.js Implementation Example
+
+```javascript
+require('dotenv').config();
+const express = require('express');
+const axios = require('axios');
+
+const app = express();
+const CLIENT_ID = process.env.TWITCH_CLIENT_ID;
+const CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
+const REDIRECT_URI = 'http://localhost:3000/callback';
+
+// Redirect to Twitch OAuth
+app.get('/login', (req, res) => {
+  const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=user:read:email`;
+  res.redirect(authUrl);
+});
+
+// Handle OAuth callback
+app.get('/callback', async (req, res) => {
+  const { code } = req.query;
+  
+  try {
+    const response = await axios.post('https://id.twitch.tv/oauth2/token', null, {
+      params: {
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: REDIRECT_URI
+      }
+    });
+    
+    const { access_token, refresh_token } = response.data;
+    
+    // Store tokens securely (database, session, etc.)
+    res.json({
+      success: true,
+      access_token,
+      refresh_token
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get current user
+app.get('/user', async (req, res) => {
+  const { access_token } = req.query;
+  
+  try {
+    const response = await axios.get('https://api.twitch.tv/helix/users', {
+      headers: {
+        'Client-ID': CLIENT_ID,
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
+    
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
+```
+
+<br />
+
+# Python Chatbot Example
+
+```python
+import os
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+CLIENT_ID = os.getenv('TWITCH_CLIENT_ID')
+ACCESS_TOKEN = os.getenv('TWITCH_ACCESS_TOKEN')
+
+def get_stream_info(channel_id):
+    headers = {
+        'Client-ID': CLIENT_ID,
+        'Authorization': f'Bearer {ACCESS_TOKEN}'
+    }
+    
+    response = requests.get(
+        f'https://api.twitch.tv/helix/streams?user_id={channel_id}',
+        headers=headers
+    )
+    
+    return response.json()
+
+def update_stream_title(new_title):
+    headers = {
+        'Client-ID': CLIENT_ID,
+        'Authorization': f'Bearer {ACCESS_TOKEN}',
+        'Content-Type': 'application/json'
+    }
+    
+    response = requests.patch(
+        'https://api.twitch.tv/helix/channels',
+        headers=headers,
+        json={'title': new_title}
+    )
+    
+    return response.json()
+
+# Example usage
+stream_info = get_stream_info('123456789')
+print(stream_info)
+```
+
+<br />
+
+# Security Best Practices
+
+- **Never expose Client Secret** - only use on backend servers
+- **Use environment variables** - store credentials in `.env` files
+- **Implement PKCE** - for public/mobile apps without backend
+- **Validate redirect URIs** - ensure they match registered URLs exactly
+- **Use HTTPS only** - for all redirect and API URLs
+- **Rotate tokens** - regenerate secrets if compromised
+- **Implement rate limiting** - Twitch has strict API rate limits
+- **Store refresh tokens securely** - use encrypted database storage
+- Check [Twitch Security Guide](https://dev.twitch.tv/docs/authentication/security)
+
+<br />
+
+# Rate Limits
+
+- **API requests:** 120 requests per minute (per user/token)
+- **Chat message:** 20 messages per 30 seconds
+- **Authentication:** 40 authorization requests per minute
+- Monitor your usage in Developer Console
+
+# Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Invalid OAuth token" | Regenerate token or check expiration |
+| 401 Unauthorized | Verify Client ID and token in headers |
+| Redirect URI mismatch | Ensure exact match with registered URL |
+| Rate limited (429) | Wait before making more requests |
+| Scope insufficient | Request additional scopes during authorization |
+
+---
+
+**Ready to build?** Check out the [Twitch Developer Documentation](https://dev.twitch.tv/docs) and start creating amazing integrations!

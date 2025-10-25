@@ -1,0 +1,276 @@
+---
+title: How to Get YouTube API Keys and Configure Access
+date: '2025-10-22'
+tags: [youtube, api, google-cloud, streaming]
+draft: false
+summary: Setting up YouTube API access is easier than you think. Learn how to create API keys and OAuth credentials for your projects.
+author: Tech Guide
+---
+
+![YouTube Logo](https://www.freeiconspng.com/uploads/youtube-logo-png-photo-0.png)
+
+In this guide, I'll show you how to set up YouTube API access, generate API keys, and implement OAuth authentication for your applications.
+
+I needed YouTube API access to build a video analytics dashboard and display my channel statistics on my portfolio.
+
+# First Approach (Quick API Key Setup)
+
+---
+
+## Step 1: Create a Google Cloud Project
+
+- Go to [Google Cloud Console](https://console.cloud.google.com/)
+- Click the project dropdown at the top
+- Click **NEW PROJECT**
+- Enter a project name (e.g., "YouTube Stats Dashboard")
+- Click **CREATE**
+
+![Google Cloud Console](https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800)
+
+## Step 2: Enable YouTube Data API
+
+- In the Google Cloud Console, go to **APIs & Services** > **Library**
+- Search for "YouTube Data API v3"
+- Click on the result
+- Click the **ENABLE** button
+- Wait for the API to be enabled
+
+## Step 3: Create API Key
+
+- Go to **APIs & Services** > **Credentials**
+- Click **+ CREATE CREDENTIALS** > **API Key**
+- Your API key will be generated (e.g., `AIzaSyD_YourKeyHere123`)
+- **Important:** Copy and save this key securely
+- By default, this key is unrestricted - you can add restrictions
+
+## Step 4: Restrict Your API Key (Recommended)
+
+- Click on your API key to open its settings
+- Under **API restrictions**, select **YouTube Data API v3**
+- Under **Application restrictions**, choose:
+  - **HTTP referrers** - For web apps (add your domain)
+  - **IP addresses** - For server-side applications
+  - **Android apps** or **iOS apps** - For mobile apps
+- Click **SAVE**
+
+## Step 5: Use Your API Key
+
+- Add your API key to requests as a query parameter:
+
+```bash
+curl "https://www.googleapis.com/youtube/v3/search?part=snippet&q=tutorial&key=YOUR_API_KEY"
+```
+
+- Or in JavaScript:
+
+```javascript
+const apiKey = 'YOUR_API_KEY';
+const channelId = 'UC_CHANNEL_ID';
+
+fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&forUsername=${channelId}&key=${apiKey}`)
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+<br />
+<br />
+
+# Second Approach (OAuth2 for User Authentication)
+
+---
+
+## Step 1: Create OAuth 2.0 Credentials
+
+- Go to [Google Cloud Console](https://console.cloud.google.com/)
+- Navigate to **APIs & Services** > **Credentials**
+- Click **+ CREATE CREDENTIALS** > **OAuth 2.0 Client IDs**
+- If prompted, configure the OAuth consent screen first:
+  - Choose **External** user type
+  - Fill in the required fields (App name, User support email, etc.)
+  - Add scopes: `youtube.readonly` or `youtube` depending on your needs
+  - Click **SAVE AND CONTINUE**
+
+## Step 2: Configure Client ID
+
+- Select **Web application** as the Application type
+- Enter a name (e.g., "YouTube Dashboard")
+- Under **Authorized JavaScript origins**, add:
+  - `http://localhost:3000` (for development)
+  - `https://yourdomain.com` (for production)
+- Under **Authorized redirect URIs**, add:
+  - `http://localhost:3000/callback`
+  - `https://yourdomain.com/callback`
+- Click **CREATE**
+
+## Step 3: Download Credentials
+
+- Your credentials will be displayed with:
+  - **Client ID** (e.g., `123456789-abcdef.apps.googleusercontent.com`)
+  - **Client Secret** (e.g., `GOCSPX_YourSecretHere`)
+- Click **DOWNLOAD JSON** to save credentials file
+- Store this securely and never commit it to version control
+
+![OAuth Credentials](https://images.unsplash.com/photo-1516321318423-f06f70a504f9?w=800)
+
+## Step 4: Create Authorization URL
+
+- Build the OAuth2 authorization URL:
+
+```
+https://accounts.google.com/o/oauth2/v2/auth?client_id=$CLIENT_ID&redirect_uri=$REDIRECT_URI&response_type=code&scope=$SCOPE&access_type=offline&prompt=consent
+```
+
+- Example:
+
+```
+https://accounts.google.com/o/oauth2/v2/auth?client_id=123456789.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fyourdomain.com%2Fcallback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly&access_type=offline&prompt=consent
+```
+
+**Note:** [URL encode](https://meyerweb.com/eric/tools/dencoder/) your redirect URI and scope
+
+## Step 5: Exchange Authorization Code for Tokens
+
+- When users authorize, they're redirected with a `code` parameter
+- Exchange it for access and refresh tokens:
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=$CLIENT_ID" \
+  -d "client_secret=$CLIENT_SECRET" \
+  -d "code=$CODE" \
+  -d "grant_type=authorization_code" \
+  -d "redirect_uri=$REDIRECT_URI"
+```
+
+## Step 6: Handle Token Response
+
+- You'll receive:
+
+```json
+{
+  "access_token": "ya29.a0AfH6SMBx...",
+  "expires_in": 3599,
+  "refresh_token": "1//0gzK...",
+  "scope": "https://www.googleapis.com/auth/youtube.readonly",
+  "token_type": "Bearer"
+}
+```
+
+- Store the `refresh_token` for long-term access
+- Use `access_token` to make API requests
+
+<br />
+
+# API Request Examples
+
+---
+
+## Search Videos
+
+```bash
+curl "https://www.googleapis.com/youtube/v3/search?part=snippet&q=javascript+tutorial&maxResults=10&key=YOUR_API_KEY"
+```
+
+## Get Channel Statistics
+
+```bash
+curl "https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&mine=true&access_token=YOUR_ACCESS_TOKEN"
+```
+
+## Get Video Details
+
+```bash
+curl "https://www.googleapis.com/youtube/v3/videos?part=statistics,contentDetails&id=VIDEO_ID&key=YOUR_API_KEY"
+```
+
+## Upload a Video (Requires OAuth)
+
+```bash
+curl -X POST https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "snippet": {
+      "title": "My Video",
+      "description": "Video description",
+      "tags": ["tutorial"],
+      "categoryId": "22"
+    },
+    "status": {
+      "privacyStatus": "private"
+    }
+  }'
+```
+
+<br />
+
+# JavaScript Implementation Example
+
+```javascript
+require('dotenv').config();
+const express = require('express');
+const { google } = require('googleapis');
+
+const app = express();
+const youtube = google.youtube('v3');
+
+const oauth2Client = new google.auth.OAuth2(
+  process.env.CLIENT_ID,
+  process.env.CLIENT_SECRET,
+  'http://localhost:3000/callback'
+);
+
+// Generate auth URL
+app.get('/auth', (req, res) => {
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: 'https://www.googleapis.com/auth/youtube.readonly'
+  });
+  res.redirect(authUrl);
+});
+
+// Handle callback
+app.get('/callback', async (req, res) => {
+  const { code } = req.query;
+  const { tokens } = await oauth2Client.getToken(code);
+  oauth2Client.setCredentials(tokens);
+  
+  const response = await youtube.channels.list({
+    auth: oauth2Client,
+    part: 'statistics,snippet',
+    mine: true
+  });
+  
+  res.json(response.data);
+});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
+```
+
+<br />
+
+# Security Best Practices
+
+- **Never expose API keys** - use server-side requests when possible
+- **Use environment variables** - store keys in `.env` files
+- **Restrict API keys** - limit to specific APIs and origins
+- **Rotate credentials** - regenerate if compromised
+- **Implement rate limiting** - YouTube API has quota limits
+- **Use OAuth for user data** - API keys are for public data only
+- **Keep refresh tokens secure** - store in secure databases
+- **Log API usage** - monitor for suspicious activity
+- Check [YouTube API Best Practices](https://developers.google.com/youtube/v3/getting-started)
+
+<br />
+
+# Quota and Limits
+
+- **API Key requests:** 10,000 units/day (free tier)
+- **OAuth requests:** Same quota applies
+- **Search API:** 100 units per request
+- **Video upload:** 1,600 units per request
+- Monitor your quota in **APIs & Services** > **Quotas**
+
+---
+
+**Start building!** Visit the [YouTube API Documentation](https://developers.google.com/youtube/v3) for complete reference.

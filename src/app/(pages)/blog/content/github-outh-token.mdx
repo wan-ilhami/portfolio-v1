@@ -1,0 +1,162 @@
+---
+title: How to Get GitHub OAuth Token for API Integration
+date: '2025-10-22'
+tags: [github, oauth, api, authentication]
+draft: false
+summary: Getting a GitHub OAuth Token is simple. Learn two approaches to generate and use tokens for API authentication.
+author: Tech Guide
+---
+
+![GitHub Logo](https://pngimg.com/d/github_PNG65.png)
+
+In this guide, I'll show you 2 approaches to generate a GitHub OAuth Token and use it to authenticate API requests programmatically.
+
+I needed the GitHub OAuth Token for my projects to access user repositories, manage issues, and display GitHub statistics on my portfolio site.
+
+# First Approach (Quick & Easy)
+
+---
+
+## Step 1: Go to GitHub Settings
+
+- Log in to your [GitHub account](https://github.com/login)
+- Click your profile picture in the top right corner
+- Select **Settings** from the dropdown menu
+
+![GitHub Settings Menu](https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800)
+
+## Step 2: Navigate to Developer Settings
+
+- In the left sidebar, scroll down and click **Developer settings**
+- Then click **Personal access tokens** > **Tokens (classic)**
+
+## Step 3: Generate a New Token
+
+- Click the **Generate new token** button
+- Choose **Generate new token (classic)**
+- Give your token a descriptive name (e.g., "Portfolio API Token")
+- Set an expiration date (e.g., 90 days for security)
+
+## Step 4: Select Scopes
+
+- Check the scopes you need based on your use case:
+  - `repo` - Full control of private repositories
+  - `read:user` - Read user profile data
+  - `public_repo` - Access public repositories only
+  - `gist` - Create and manage gists
+  - For more scopes, see the [GitHub documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps)
+
+## Step 5: Copy Your Token
+
+- Click **Generate token**
+- **Important:** Copy your token immediately and store it in a secure location (password manager, environment variable, etc.)
+- GitHub will not show it again for security reasons
+
+<br />
+<br />
+
+# Second Approach (OAuth Application Setup)
+
+---
+
+## Step 1: Create an OAuth Application
+
+- Go to [GitHub Developer Settings](https://github.com/settings/developers)
+- Click **OAuth Apps** > **New OAuth App**
+- Fill in the application details:
+  - **Application name:** Your app name
+  - **Homepage URL:** Your website or app URL (e.g., `https://myportfolio.com`)
+  - **Authorization callback URL:** `https://myportfolio.com/callback`
+
+![OAuth App Creation](https://images.unsplash.com/photo-1516321318423-f06f70a504f9?w=800)
+
+## Step 2: Note Your Credentials
+
+- After creating the app, you'll see:
+  - **Client ID**
+  - **Client Secret** (click "Generate a new client secret")
+- Save both values securely
+
+## Step 3: Create Authorization URL
+
+- Replace the variables in the URL below with your information:
+
+```
+https://github.com/login/oauth/authorize?client_id=$CLIENT_ID&redirect_uri=$REDIRECT_URI&scope=$SCOPE&state=$STATE
+```
+
+- Example:
+
+```
+https://github.com/login/oauth/authorize?client_id=abc123def456&redirect_uri=https%3A%2F%2Fmyportfolio.com%2Fcallback&scope=read:user,public_repo&state=random_state_string
+```
+
+**Note:** Make sure your `$REDIRECT_URI` is [URL encoded](https://meyerweb.com/eric/tools/dencoder/)
+
+## Step 4: Exchange Code for Access Token
+
+- When users authorize your app, they'll be redirected to your callback URL with a `code` parameter
+- Extract the code from the URL
+
+## Step 5: Get Your Access Token
+
+- From your backend, make a POST request with the following curl command:
+
+```bash
+curl -X POST https://github.com/login/oauth/access_token \
+  -H "Accept: application/json" \
+  -d "client_id=$CLIENT_ID" \
+  -d "client_secret=$CLIENT_SECRET" \
+  -d "code=$CODE"
+```
+
+- The response will look like this:
+
+```json
+{
+  "access_token": "gho_16C7e42F292c6912E7710c838347Ae178B4a",
+  "expires_in": 28800,
+  "refresh_token": "ghr_1B4a2e77838347a7E420314a7E33D76E0F3c6A7B123",
+  "refresh_token_expires_in": 15811200,
+  "scope": "read:user,public_repo",
+  "token_type": "bearer"
+}
+```
+
+- Save the `access_token` for making authenticated API requests
+
+<br />
+
+## Step 6: Use Your Token for API Requests
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  https://api.github.com/user
+```
+
+Or in JavaScript:
+
+```javascript
+const response = await fetch('https://api.github.com/user', {
+  headers: {
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
+  }
+});
+const data = await response.json();
+console.log(data);
+```
+
+<br />
+
+# Security Best Practices
+
+- Never commit tokens to version control
+- Use environment variables to store tokens
+- Rotate tokens regularly (set shorter expiration times)
+- Use OAuth for user-facing apps rather than personal access tokens
+- Review and revoke unused tokens periodically
+- For more info, check [GitHub's security guide](https://docs.github.com/en/code-security)
+
+---
+
+**Happy coding!** For more information, visit the [GitHub API documentation](https://docs.github.com/en/rest).
