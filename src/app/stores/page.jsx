@@ -1,36 +1,15 @@
-import { configureStore, combineReducers, createSlice } from '@reduxjs/toolkit';
+'use client';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
+// import account from './account';
 
-// Example reducer - create your actual reducers and add them here
-const appSlice = createSlice({
-  name: 'app',
-  initialState: {
-    theme: 'light',
-    loading: false,
-  },
-  reducers: {
-    setTheme: (state, action) => {
-      state.theme = action.payload;
-    },
-    setLoading: (state, action) => {
-      state.loading = action.payload;
-    },
-  },
-});
-
-// Create the root reducer with your reducers
+// Create the root reducer separately so we can extract the RootState type
 const rootReducer = combineReducers({
-  app: appSlice.reducer,
-  // Add more reducers here as needed:
-  // auth: authReducer,
-  // posts: postsReducer,
+  // account: account,
 });
 
-export const setupStore = (preloadedState) => {
+export const setupStore = preloadedState => {
   return configureStore({
     reducer: rootReducer,
     preloadedState,
   });
 };
-
-// Export actions
-export const { setTheme, setLoading } = appSlice.actions;
