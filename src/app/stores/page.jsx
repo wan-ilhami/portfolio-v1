@@ -1,10 +1,10 @@
 'use client';
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
-// import account from './account';
 
-// Create the root reducer separately so we can extract the RootState type
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import account from './account';
+
 const rootReducer = combineReducers({
-  // account: account,
+  account: account,
 });
 
 export const setupStore = preloadedState => {
