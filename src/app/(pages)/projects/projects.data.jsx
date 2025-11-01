@@ -1,84 +1,21 @@
+// Full-stack
+// Backend
+// Frontend
+// Design
+// AI/ML
+// DevOps
+// Cloud
+
+
 const projectsData = [
-    {
-      title: 'InstantMD',
-      description: `Investigation, Medication and Chief complaint recognition using NLP. 🏆 Winner of HealthCare Track at MINeD Hackathon.`,
-      href: '',
-      github: 'https://github.com/pycoder2000/InstantMD',
-      technologies: ['Regex', 'Flask', 'Semantic UI'],
-      category: 'Full-stack',
-    },
-    {
-      title: 'Car Price Predictor',
-      description: `Predicts car prices based on features using Linear Regression. Built with Flask and deployed on Heroku.`,
-      href: 'https://allysoncaragency.herokuapp.com/',
-      github: 'https://github.com/pycoder2000/Car-Price-Prediction',
-      technologies: ['Scipy', 'Linear Regression', 'Javascript'],
-      category: 'Full-stack',
-    },
-    {
-      title: 'Stock Portfolio Management',
-      description: `Manage investments with real-time stock data from Yahoo Finance and IEX Cloud APIs. Compare performance with charts.`,
-      href: '',
-      github: 'https://github.com/pycoder2000/Stock-Management',
-      technologies: ['Django', 'SQLite', 'HTML/CSS'],
-      category: 'Full-stack',
-    },
-    {
-      title: 'Sentiment Analysis',
-      description: `Analyze user sentiments across platforms using REST APIs. Trained on 1.6M tweets from Sentiment140 dataset.`,
-      href: '',
-      github: 'https://github.com/pycoder2000/sentiment-analysis',
-      technologies: ['Flask', 'NLTK', 'TfidfVectorizer'],
-      category: 'Backend',
-    },
-    {
-      title: 'Salary Predictor',
-      description: `Predict salary based on years of experience. Built with StreamLit framework in pure Python.`,
-      href: 'https://salary-predictor-stream.herokuapp.com/',
-      github: 'https://github.com/pycoder2000/Salary',
-      technologies: ['Python', 'Streamlit', 'Javascript'],
-      category: 'Full-stack',
-    },
-    {
-      title: 'Xenith Space Shooter',
-      description: `Retro space shooter game built with Pygame. A gift for 1st Anniversary.`,
-      href: '',
-      github: 'https://github.com/pycoder2000/Xenith-Space_Shooter',
-      technologies: ['Pygame', 'Python', 'Tkinter'],
-      category: 'Design',
-    },
-    {
-      title: 'Django Chat App',
-      description: `Real-time chat application using Django, Channels, and Web Sockets with Vanilla Javascript.`,
-      href: '',
-      github: 'https://github.com/pycoder2000/djangochat',
-      technologies: ['Django', 'Vanilla Javascript', 'Web Sockets'],
-      category: 'Full-stack',
-    },
-    {
-      title: 'CLI Quiz',
-      description: `"Who wants to be a Millionaire?" Terminal Game. Built with Node.js and Javascript.`,
-      href: 'https://libraries.io/npm/cliquiz-millionaire',
-      github: 'https://github.com/pycoder2000/CLI-Quiz',
-      technologies: ['Node', 'Javascript', 'HTML'],
-      category: 'Frontend',
-    },
-    {
-      title: 'To-Do List',
-      description: `Simple to-do app with add, edit, delete, reorder tasks. Features login/register and clean UI.`,
-      href: '',
-      github: 'https://github.com/pycoder2000/Todo-List',
-      technologies: ['Django', 'HTML', 'SQL'],
-      category: 'Full-stack',
-    },
-    {
-      title: 'Predicting Shares',
-      description: `Machine Learning model to predict article shares based on popularity metrics.`,
-      href: '',
-      github: 'https://github.com/pycoder2000/Predicting-Number-of-Shares',
-      technologies: ['Scipy', 'Machine Learning', 'Linear Regression'],
-      category: 'Backend',
-    },
-  ]
+  {
+    title: 'Resume Builder',
+    description: `A modern, ATS-friendly resume builder built with Next.js 16 and React 19. Create professional resumes with customizable templates, export to PDF, and enjoy seamless auto-versioning with semantic release. 🚀`,
+    href: 'https://resumeje.vercel.app/',
+    github: 'https://github.com/wan-ilhami/resumeje',
+    technologies: ['Next.js', 'React 19', 'Tailwind CSS', 'TypeScript', 'Radix UI'],
+    category: 'Frontend',
+  },
+]
 
 export default projectsData
