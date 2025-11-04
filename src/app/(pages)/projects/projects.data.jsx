@@ -16,6 +16,22 @@ const projectsData = [
     technologies: ['Next.js', 'React 19', 'Tailwind CSS', 'TypeScript', 'Radix UI'],
     category: 'Frontend',
   },
+  {
+    title: 'ChatBot AI Assistant Frontend',
+    description: `A modern chat interface for an AI assistant built with React and Vite. It features conversation history persistence, command autocomplete, and integrates with a FastAPI backend for chat endpoints. 🤖`,
+    href: 'https://chatbot-ai-two-red.vercel.app/',
+    github: 'https://github.com/wan-ilhami/ChatBot-AI-frontend',
+    technologies: ['React', 'Vite', 'Tailwind CSS', 'JavaScript'],
+    category: 'Frontend',
+  },
+  {
+    title: 'ChatBot AI Assistant Backend',
+    description: `A backend API built with FastAPI for a conversational AI assistant. It supports multi-turn chat dynamics, intent parsing, tool routing (calculator, product/outlet search), and stores per-user memory for context continuity.`,
+    github: 'https://github.com/wan-ilhami/ChatBot-AI-backend',
+    technologies: ['FastAPI', 'Python', 'SQLite', 'Pydantic', 'Uvicorn'],
+    category: 'Backend',
+  }
+  ,
 ]
 
 export default projectsData
