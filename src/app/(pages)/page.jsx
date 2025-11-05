@@ -187,7 +187,7 @@ const HomePage = () => {
             gradient="from-fuchsia-600 to-emerald-600"
           />
           <ActionCard
-            href="/Wan_Ilhami_Mahfudz_Resume-v1.pdf"
+            href="/Wan_Ilhami_Mahfudz_Resume-v1.1.pdf"
             icon={FileText}
             iconColor="text-amber-600"
             title="Hire Me!"
