@@ -14,7 +14,7 @@ const projectsData = [
     href: 'https://resumeje.vercel.app/',
     github: 'https://github.com/wan-ilhami/resumeje',
     technologies: ['Next.js', 'React 19', 'Tailwind CSS', 'TypeScript', 'Radix UI'],
-    category: 'Frontend',
+    category: ['Frontend']
   },
   {
     title: 'ChatBot AI Assistant Frontend',
@@ -22,16 +22,22 @@ const projectsData = [
     href: 'https://chatbot-ai-two-red.vercel.app/',
     github: 'https://github.com/wan-ilhami/ChatBot-AI-frontend',
     technologies: ['React', 'Vite', 'Tailwind CSS', 'JavaScript'],
-    category: 'Frontend',
+    category: 'Frontend'
   },
   {
     title: 'ChatBot AI Assistant Backend',
     description: `A backend API built with FastAPI for a conversational AI assistant. It supports multi-turn chat dynamics, intent parsing, tool routing (calculator, product/outlet search), and stores per-user memory for context continuity.`,
     github: 'https://github.com/wan-ilhami/ChatBot-AI-backend',
     technologies: ['FastAPI', 'Python', 'SQLite', 'Pydantic', 'Uvicorn'],
-    category: 'Backend',
-  }
-  ,
+    category: ['Backend', 'AI/ML']
+  },
+  {
+    title: "Exchange Rate App",
+    description: "A full-stack application to fetch and display currency exchange rates. Supports historical data queries, pagination, and admin management of currencies and rates.",
+    github: "https://github.com/wan-ilhami/exchange_rate",
+    technologies: ["Node.js", "Express", "PostgreSQL", "React", "Next.js", "Tailwind CSS", "Redux Toolkit", "Jest", "Axios"],
+    category: ['Full-stack', 'Backend', 'Frontend',]
+  },
 ]
 
 export default projectsData
