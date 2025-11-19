@@ -26,6 +26,11 @@ const ProjectCard = ({
   }
 
   const isAwardWinning = description.includes('🏆')
+  
+  // Normalize category to always be an array
+  const categories = Array.isArray(category) ? category : [category]
+  // Get primary category (first one) for the folder icon color
+  const primaryCategory = categories[0]
 
   return (
     <motion.div
@@ -64,7 +69,7 @@ const ProjectCard = ({
           <motion.div
             whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.05 }}
             transition={{ duration: 0.5 }}
-            className={`p-3 rounded-xl bg-gradient-to-br ${getCategoryColor(category)} shadow-md`}
+            className={`p-3 rounded-xl bg-gradient-to-br ${getCategoryColor(primaryCategory)} shadow-md`}
           >
             <Folder className="w-6 h-6 text-white" />
           </motion.div>
@@ -99,16 +104,22 @@ const ProjectCard = ({
           </div>
         </div>
 
-        {/* Category Badge */}
-        {category && (
-          <div className="mb-3">
-            <span
-              className={`inline-block text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r ${getCategoryColor(
-                category
-              )} text-white shadow-md`}
-            >
-              {category}
-            </span>
+        {/* Category Badges - Now supports multiple categories */}
+        {categories.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {categories.map((cat, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 + i * 0.1 }}
+                className={`inline-block text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r ${getCategoryColor(
+                  cat
+                )} text-white shadow-md`}
+              >
+                {cat}
+              </motion.span>
+            ))}
           </div>
         )}
 

@@ -6,7 +6,6 @@
 // DevOps
 // Cloud
 
-
 const projectsData = [
   {
     title: 'Resume Builder',
@@ -22,7 +21,7 @@ const projectsData = [
     href: 'https://chatbot-ai-two-red.vercel.app/',
     github: 'https://github.com/wan-ilhami/ChatBot-AI-frontend',
     technologies: ['React', 'Vite', 'Tailwind CSS', 'JavaScript'],
-    category: 'Frontend'
+    category: ['Frontend']
   },
   {
     title: 'ChatBot AI Assistant Backend',
@@ -36,7 +35,7 @@ const projectsData = [
     description: "A full-stack application to fetch and display currency exchange rates. Supports historical data queries, pagination, and admin management of currencies and rates.",
     github: "https://github.com/wan-ilhami/exchange_rate",
     technologies: ["Node.js", "Express", "PostgreSQL", "React", "Next.js", "Tailwind CSS", "Redux Toolkit", "Jest", "Axios"],
-    category: ['Full-stack', 'Backend', 'Frontend',]
+    category: ['Full-stack', 'Backend', 'Frontend']
   },
 ]
 
